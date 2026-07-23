@@ -10,7 +10,8 @@ readme = "README.md"
 requires-python = ">=3.10,<3.14"
 dependencies = [
   "mjlab>=1.5.3",
-  "torch==2.11.0+cu128",
+  "torch==2.11.0+cu128; sys_platform != 'darwin'",
+  "torch>=2.7.0; sys_platform == 'darwin'",
 ]
 
 [project.entry-points."mjlab.tasks"]

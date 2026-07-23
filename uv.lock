@@ -1325,7 +1325,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "mjlab", git = "https://github.com/mujocolab/mjlab?rev=27b86a8d2d38c4f63b9f305317d967e261f802a3" },
-    { name = "torch", marker = "sys_platform != 'darwin'", specifier = ">=2.7.0", index = "https://download.pytorch.org/whl/cu128" },
+    { name = "torch", marker = "sys_platform != 'darwin'", specifier = "==2.11.0+cu128", index = "https://download.pytorch.org/whl/cu128" },
     { name = "torch", marker = "sys_platform == 'darwin'", specifier = ">=2.7.0" },
 ]
 
