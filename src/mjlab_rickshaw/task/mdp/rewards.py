@@ -87,7 +87,12 @@ def wheel_slip(
 ) -> torch.Tensor:
   asset = _asset(env, asset_cfg)
   wheel_vel_w = asset.data.body_link_vel_w[:, asset_cfg.body_ids, :3]
-  wheel_vel_b = quat_apply_inverse(asset.data.root_link_quat_w[:, None, :], wheel_vel_w)
+  quat_wheels = asset.data.root_link_quat_w[:, None, :].expand(
+    -1, wheel_vel_w.shape[1], -1
+  )
+  wheel_vel_b = quat_apply_inverse(
+    quat_wheels.reshape(-1, 4), wheel_vel_w.reshape(-1, 3)
+  ).view_as(wheel_vel_w)
   roll_error = (
     wheel_vel_b[..., 0] - wheel_radius * asset.data.joint_vel[:, asset_cfg.joint_ids]
   )

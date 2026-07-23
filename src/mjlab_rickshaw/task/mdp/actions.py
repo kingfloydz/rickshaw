@@ -80,7 +80,11 @@ class TowForceAction(ActionTerm):
 
   def apply_actions(self) -> None:
     quat_w = self._entity.data.root_link_quat_w
-    force_w = quat_apply(quat_w[:, None, :], self._current_force_b)
+    force_b = self._current_force_b
+    quat_sites = quat_w[:, None, :].expand(-1, force_b.shape[1], -1)
+    force_w = quat_apply(quat_sites.reshape(-1, 4), force_b.reshape(-1, 3)).view_as(
+      force_b
+    )
     hitch_pos_w = self._entity.data.site_pos_w[:, self._site_ids]
     root_com_w = self._entity.data.root_com_pos_w[:, None, :]
     torque_w = torch.cross(hitch_pos_w - root_com_w, force_w, dim=-1).sum(dim=1)
