@@ -158,9 +158,9 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
       weight=-4.0,
       params={"soft_limit": 10.0, "hard_limit": 50.0},
     ),
-    "opposing_force": RewardTermCfg(
-      func=mdp.opposing_force,
-      weight=-1,
+    "force_difference": RewardTermCfg(
+      func=mdp.force_difference,
+      weight=-0.5,
       params={"hard_limit": 50.0},
     ),
     "force_continuity": RewardTermCfg(

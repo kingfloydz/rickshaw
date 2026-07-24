@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 import torch
 from mjlab.entity import Entity
 from mjlab.managers.scene_entity_config import SceneEntityCfg
-from mjlab.utils.lab_api.math import quat_apply
 
 from .actions import TowForceAction
 from .frames import terrain_frame
@@ -181,32 +180,14 @@ def force_second_difference(
   return torch.sum(torch.square(second_difference), dim=(1, 2)) / (2.0 * hard_limit**2)
 
 
-def opposing_force(
+def force_difference(
   env: ManagerBasedRlEnv,
   action_name: str = "tow_force",
   hard_limit: float = 50.0,
 ) -> torch.Tensor:
-  """Penalize cancelling ground-lateral and normal hitch forces."""
   action = _force_action(env, action_name)
-  asset = action._entity
-  _, lateral, normal = terrain_frame(env, asset)
-  force_b = action.current_force_b
-  quat_w = asset.data.root_link_quat_w[:, None, :].expand(-1, 2, -1)
-  force_w = quat_apply(quat_w.reshape(-1, 4), force_b.reshape(-1, 3)).view_as(force_b)
-  force = torch.stack(
-    (
-      torch.sum(force_w * lateral[:, None, :], dim=-1),
-      torch.sum(force_w * normal[:, None, :], dim=-1),
-    ),
-    dim=-1,
-  )
-  left, right = force[:, 0], force[:, 1]
-  cancelled = torch.where(
-    left * right < 0.0,
-    torch.minimum(torch.abs(left), torch.abs(right)),
-    0.0,
-  )
-  return torch.linalg.vector_norm(cancelled, dim=-1) / hard_limit
+  difference = action.current_force_b[:, 0] - action.current_force_b[:, 1]
+  return torch.linalg.vector_norm(difference, dim=-1) / (2.0 * hard_limit)
 
 
 def termination(env: ManagerBasedRlEnv) -> torch.Tensor:
