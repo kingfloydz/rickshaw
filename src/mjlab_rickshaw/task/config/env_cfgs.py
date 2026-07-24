@@ -7,7 +7,6 @@ import math
 from mjlab.envs import ManagerBasedRlEnvCfg
 from mjlab.envs import mdp as envs_mdp
 from mjlab.managers.command_manager import CommandTermCfg
-from mjlab.managers.curriculum_manager import CurriculumTermCfg
 from mjlab.managers.event_manager import EventTermCfg
 from mjlab.managers.observation_manager import ObservationGroupCfg, ObservationTermCfg
 from mjlab.managers.reward_manager import RewardTermCfg
@@ -145,7 +144,7 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
     ),
     "peak_force": RewardTermCfg(
       func=mdp.peak_force,
-      weight=0.0,
+      weight=-3.0,
       params={"soft_limit": 10.0, "hard_limit": 50.0},
     ),
     "opposing_force": RewardTermCfg(
@@ -155,12 +154,12 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
     ),
     "force_continuity": RewardTermCfg(
       func=mdp.force_continuity,
-      weight=0.0,
+      weight=-0.5,
       params={"hard_limit": 50.0},
     ),
     "force_second_difference": RewardTermCfg(
       func=mdp.force_second_difference,
-      weight=0.0,
+      weight=-0.1,
       params={"hard_limit": 50.0},
     ),
     "termination": RewardTermCfg(func=mdp.termination, weight=-200.0),
@@ -209,9 +208,6 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
         params={"sensor_name": wheel_contact.name, "duration": 0.25},
       ),
     },
-    curriculum={
-      "force_penalty": CurriculumTermCfg(func=mdp.ForcePenaltyCurriculum),
-    },
     viewer=ViewerConfig(
       origin_type=ViewerConfig.OriginType.ASSET_BODY,
       entity_name="robot",
@@ -241,5 +237,4 @@ def rickshaw_flat_env_cfg(play: bool = False) -> ManagerBasedRlEnvCfg:
   if play:
     cfg.episode_length_s = int(1e9)
     cfg.observations["actor"].enable_corruption = False
-    cfg.curriculum = {}
   return cfg

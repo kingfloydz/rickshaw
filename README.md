@@ -38,8 +38,6 @@ uv run train Mjlab-Rickshaw-Force-Flat --env.scene.num-envs 4096
 uv run play Mjlab-Rickshaw-Force-Flat --agent random
 ```
 
-力峰值、力连续性和二阶差分惩罚在两个速度跟踪项的上一回合均值都达到 `0.8` 后才启用，课程系数按 `rho <- rho + 0.2(1-rho)` 平滑增加到 1。
-
 ## 资产说明
 
 `asset_zoo/rickshaw/xmls/rickshaw.xml` 根据目录中的 `rickshaw.urdf` 建立 MJCF。轮子碰撞体使用 URDF 中的圆柱参数；车体保留 STL 视觉网格，车轮负责与水平 plane 的接触。初始化姿态由轮子半径、牵引点局部坐标和目标高度解析求得，使轮胎落地且两个牵引点高度为 `0.75 m`。

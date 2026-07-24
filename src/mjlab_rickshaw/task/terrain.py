@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import mujoco
 import numpy as np
@@ -18,23 +18,26 @@ TERRAIN_SLOPES = tuple(i / 100.0 for i in range(-8, 11))
 
 
 @dataclass(kw_only=True)
-class InclinedPlaneCfg(SubTerrainCfg):
-  """Finite plane with a fixed x-axis inclination in radians."""
+class InclinedPlanesCfg(SubTerrainCfg):
+  """Sequence of finite planes with fixed x-axis inclinations."""
 
-  angle: float
+  angles: tuple[float, ...]
   thickness: float = 0.2
+  _index: int = field(init=False, default=0)
 
   def function(
     self, difficulty: float, spec: mujoco.MjSpec, rng: np.random.Generator
   ) -> TerrainOutput:
     del difficulty, rng
+    angle = self.angles[self._index]
+    self._index += 1
     body = spec.body("terrain")
     half_thickness = self.thickness / 2.0
     geom = body.add_geom(
       type=mujoco.mjtGeom.mjGEOM_BOX,
       size=(self.size[0] / 2.0, self.size[1] / 2.0, half_thickness),
-      pos=(self.size[0] / 2.0, self.size[1] / 2.0, -half_thickness * math.cos(self.angle)),
-      quat=(math.cos(-self.angle / 2.0), 0.0, math.sin(-self.angle / 2.0), 0.0),
+      pos=(self.size[0] / 2.0, self.size[1] / 2.0, -half_thickness * math.cos(angle)),
+      quat=(math.cos(-angle / 2.0), 0.0, math.sin(-angle / 2.0), 0.0),
       rgba=(0.35, 0.38, 0.42, 1.0),
     )
     return TerrainOutput(
@@ -44,19 +47,12 @@ class InclinedPlaneCfg(SubTerrainCfg):
 
 
 def make_sloped_terrain_cfg() -> TerrainGeneratorCfg:
-  """Create 19 fixed slopes with slightly lower weight at larger inclinations."""
-  sub_terrains = {
-    f"slope_{slope:+.2f}": InclinedPlaneCfg(
-      angle=slope,
-      proportion=1.0 if abs(slope) <= 0.05 else 0.7,
-    )
-    for slope in TERRAIN_SLOPES
-  }
+  """Create one fixed 40 m by 40 m patch for each slope."""
   return TerrainGeneratorCfg(
-    curriculum=True,
     size=(40.0, 40.0),
     num_rows=1,
-    sub_terrains=sub_terrains,
+    num_cols=len(TERRAIN_SLOPES),
+    sub_terrains={"slopes": InclinedPlanesCfg(angles=TERRAIN_SLOPES)},
     color_scheme="none",
     add_lights=True,
   )

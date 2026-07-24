@@ -2,7 +2,6 @@
 
 from .actions import TowForceAction, TowForceActionCfg, TowForceVisualization
 from .commands import RickshawVelocityCommand, RickshawVelocityCommandCfg
-from .curriculums import ForcePenaltyCurriculum
 from .observations import (
   body_angular_velocity,
   body_linear_velocity,
@@ -37,7 +36,6 @@ __all__ = [
   "TowForceVisualization",
   "RickshawVelocityCommand",
   "RickshawVelocityCommandCfg",
-  "ForcePenaltyCurriculum",
   "body_angular_velocity",
   "body_linear_velocity",
   "command_forward_yaw",
