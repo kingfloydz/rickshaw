@@ -96,8 +96,8 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
       entity_name="robot",
       debug_vis=True,
       resampling_time_range=(3.0, 6.0),
-      rel_standing_envs=0.1,
-      rel_forward_envs=0.15,
+      rel_standing_envs=0.07,
+      rel_forward_envs=0.25,
       heading_command=False,
       ranges=mdp.RickshawVelocityCommandCfg.Ranges(
         lin_vel_x=(0.0, 2.0),
@@ -115,7 +115,7 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
     ),
     "track_yaw_velocity": RewardTermCfg(
       func=mdp.track_yaw_velocity,
-      weight=0.8,
+      weight=1.0,
       params={"command_name": "twist", "sigma": 0.3},
     ),
     "traction_point_height": RewardTermCfg(
