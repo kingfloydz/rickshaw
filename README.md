@@ -45,10 +45,8 @@ uv run play Mjlab-Rickshaw-Force-Flat --agent random
 `asset_zoo/rickshaw/xmls/rickshaw.xml` 根据目录中的 `rickshaw.urdf` 建立 MJCF。轮子碰撞体使用 URDF 中的圆柱参数；车体保留 STL 视觉网格，车轮负责与水平 plane 的接触。初始化姿态由轮子半径、牵引点局部坐标和目标高度解析求得，使轮胎落地且两个牵引点高度为 `0.75 m`。
 
 
-uv sync --locked
-
 uv run play Mjlab-Rickshaw-Force-Flat \
-  --checkpoint-file /inspire/hdd/project/leverage-robot/ky26212/rickshaw/logs/rsl_rl/rickshaw_force_velocity/2026-07-24_04-17-55/model_1000.pt \
+  --checkpoint-file /inspire/hdd/project/leverage-robot/ky26212/rickshaw/logs/rsl_rl/rickshaw_force_velocity/2026-07-24_05-39-56/model_800.pt \
   --num-envs 19 \
   --device cuda:0 \
   --viewer viser
@@ -65,6 +63,12 @@ git push origin main
 
 
 
+cd /inspire/hdd/project/leverage-robot/ky26212/rickshaw
+
+uv run tensorboard \
+  --logdir logs/rsl_rl/rickshaw_force_velocity \
+  --host 0.0.0.0 \
+  --port 6006
 
 
 git pull --ff-only
