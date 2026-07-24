@@ -43,9 +43,9 @@ class ForcePenaltyCurriculum:
         self.rho = min(self.rho, 1.0)
 
     for name, base_weight in (
-      ("peak_force", -1),
-      ("force_continuity", -0.2),
-      ("force_second_difference", -0.04),
+      ("peak_force", -3),
+      ("force_continuity", -0.5),
+      ("force_second_difference", -0.1),
     ):
       env.reward_manager.get_term_cfg(name).weight = base_weight * self.rho
     return {"rho": self.rho}
