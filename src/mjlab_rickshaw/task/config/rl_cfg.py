@@ -38,5 +38,5 @@ def rickshaw_ppo_runner_cfg() -> RslRlOnPolicyRunnerCfg:
     logger="tensorboard",
     save_interval=200,
     num_steps_per_env=24,
-    max_iterations=10_000,
+    max_iterations=1_000,
   )
