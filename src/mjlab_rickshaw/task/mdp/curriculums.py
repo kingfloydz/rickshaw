@@ -43,7 +43,7 @@ class ForcePenaltyCurriculum:
         self.rho = min(self.rho, 1.0)
 
     for name, base_weight in (
-      ("peak_force", -0.05),
+      ("peak_force", -0.2),
       ("force_continuity", -0.08),
       ("force_second_difference", -0.01),
     ):
