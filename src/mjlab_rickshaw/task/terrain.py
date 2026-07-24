@@ -47,9 +47,9 @@ class InclinedPlanesCfg(SubTerrainCfg):
 
 
 def make_sloped_terrain_cfg() -> TerrainGeneratorCfg:
-  """Create one fixed 40 m by 40 m patch for each slope."""
+  """Create one fixed 100 m by 100 m patch for each slope."""
   return TerrainGeneratorCfg(
-    size=(40.0, 40.0),
+    size=(100.0, 100.0),
     num_rows=1,
     num_cols=len(TERRAIN_SLOPES),
     sub_terrains={"slopes": InclinedPlanesCfg(angles=TERRAIN_SLOPES)},
