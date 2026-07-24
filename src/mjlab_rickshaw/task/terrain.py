@@ -54,7 +54,7 @@ def make_sloped_terrain_cfg() -> TerrainGeneratorCfg:
   }
   return TerrainGeneratorCfg(
     curriculum=True,
-    size=(40.0, 8.0),
+    size=(40.0, 40.0),
     num_rows=1,
     sub_terrains=sub_terrains,
     color_scheme="none",
