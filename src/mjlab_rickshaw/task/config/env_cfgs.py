@@ -118,6 +118,16 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
       weight=1.0,
       params={"command_name": "twist", "sigma": 0.3},
     ),
+    "forward_velocity_error": RewardTermCfg(
+      func=mdp.forward_velocity_error,
+      weight=-0.05,
+      params={"command_name": "twist", "scale": 0.4},
+    ),
+    "yaw_velocity_error": RewardTermCfg(
+      func=mdp.yaw_velocity_error,
+      weight=-0.1,
+      params={"command_name": "twist", "scale": 0.3},
+    ),
     "traction_point_height": RewardTermCfg(
       func=mdp.traction_height,
       weight=0.8,

@@ -61,6 +61,34 @@ def track_yaw_velocity(
   return value
 
 
+def forward_velocity_error(
+  env: ManagerBasedRlEnv,
+  command_name: str,
+  scale: float = 0.4,
+) -> torch.Tensor:
+  """Quadratic integrand of the forward velocity tracking error."""
+  asset = _asset(env, _DEFAULT_ASSET_CFG)
+  command = env.command_manager.get_command(command_name)
+  assert command is not None
+  forward, _, _ = terrain_frame(env, asset)
+  velocity = torch.sum(asset.data.root_link_lin_vel_w * forward, dim=-1)
+  return torch.square((velocity - command[:, 0]) / scale)
+
+
+def yaw_velocity_error(
+  env: ManagerBasedRlEnv,
+  command_name: str,
+  scale: float = 0.3,
+) -> torch.Tensor:
+  """Quadratic integrand of the yaw velocity tracking error."""
+  asset = _asset(env, _DEFAULT_ASSET_CFG)
+  command = env.command_manager.get_command(command_name)
+  assert command is not None
+  _, _, normal = terrain_frame(env, asset)
+  yaw_velocity = torch.sum(asset.data.root_link_ang_vel_w * normal, dim=-1)
+  return torch.square((yaw_velocity - command[:, 2]) / scale)
+
+
 def traction_height(
   env: ManagerBasedRlEnv,
   asset_cfg: SceneEntityCfg,

@@ -17,6 +17,7 @@ from .observations import (
 from .rewards import (
   force_continuity,
   force_second_difference,
+  forward_velocity_error,
   opposing_force,
   peak_force,
   roll_pitch_rate,
@@ -27,6 +28,7 @@ from .rewards import (
   undesired_linear_velocity,
   wheel_lift,
   wheel_slip,
+  yaw_velocity_error,
 )
 from .terminations import bad_orientation, wheel_air
 
@@ -47,6 +49,7 @@ __all__ = [
   "wheel_contact",
   "force_continuity",
   "force_second_difference",
+  "forward_velocity_error",
   "opposing_force",
   "peak_force",
   "roll_pitch_rate",
@@ -57,6 +60,7 @@ __all__ = [
   "undesired_linear_velocity",
   "wheel_lift",
   "wheel_slip",
+  "yaw_velocity_error",
   "bad_orientation",
   "wheel_air",
 ]
