@@ -144,5 +144,21 @@ def force_second_difference(
   return torch.sum(torch.square(second_difference), dim=(1, 2)) / (2.0 * hard_limit**2)
 
 
+def opposing_force(
+  env: ManagerBasedRlEnv,
+  action_name: str = "tow_force",
+  hard_limit: float = 50.0,
+) -> torch.Tensor:
+  """Penalize cancelling lateral and vertical forces at the two hitch points."""
+  force = _force_action(env, action_name).current_force_b[:, :, 1:]
+  left, right = force[:, 0], force[:, 1]
+  cancelled = torch.where(
+    left * right < 0.0,
+    torch.minimum(torch.abs(left), torch.abs(right)),
+    0.0,
+  )
+  return torch.linalg.vector_norm(cancelled, dim=-1) / hard_limit
+
+
 def termination(env: ManagerBasedRlEnv) -> torch.Tensor:
   return env.termination_manager.terminated.float()

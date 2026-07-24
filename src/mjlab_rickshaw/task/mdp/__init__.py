@@ -18,6 +18,7 @@ from .observations import (
 from .rewards import (
   force_continuity,
   force_second_difference,
+  opposing_force,
   peak_force,
   roll_pitch_rate,
   termination,
@@ -49,6 +50,7 @@ __all__ = [
   "wheel_contact",
   "force_continuity",
   "force_second_difference",
+  "opposing_force",
   "peak_force",
   "roll_pitch_rate",
   "termination",

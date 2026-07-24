@@ -44,6 +44,7 @@ class ForcePenaltyCurriculum:
 
     for name, base_weight in (
       ("peak_force", -1),
+      ("opposing_force", -0.2),
       ("force_continuity", -0.08),
       ("force_second_difference", -0.01),
     ):
