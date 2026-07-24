@@ -30,7 +30,7 @@
           material="wheel_dark" contype="0" conaffinity="0" />
         <geom name="left_wheel_collision" type="cylinder" size="0.3 0.036274"
           quat="0.7071067811865476 0.7071067811865476 0 0"
-          friction="1.0 0.01 0.001" condim="6" />
+          friction="1.0 0.01 0.001" condim="6" group="3" rgba="0 0 0 0" />
       </body>
 
       <body name="right_wheel_link" pos="0 -0.378231 0.3">
@@ -41,7 +41,7 @@
           material="wheel_dark" contype="0" conaffinity="0" />
         <geom name="right_wheel_collision" type="cylinder" size="0.3 0.036274"
           quat="0.7071067811865476 0.7071067811865476 0 0"
-          friction="1.0 0.01 0.001" condim="6" />
+          friction="1.0 0.01 0.001" condim="6" group="3" rgba="0 0 0 0" />
       </body>
     </body>
   </worldbody>
