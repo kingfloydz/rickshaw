@@ -115,7 +115,7 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
     ),
     "track_yaw_velocity": RewardTermCfg(
       func=mdp.track_yaw_velocity,
-      weight=0.75,
+      weight=0.8,
       params={"command_name": "twist", "sigma": 0.3},
     ),
     "traction_point_height": RewardTermCfg(
@@ -145,7 +145,7 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
     ),
     "peak_force": RewardTermCfg(
       func=mdp.peak_force,
-      weight=-3.0,
+      weight=-4.0,
       params={"soft_limit": 10.0, "hard_limit": 50.0},
     ),
     "opposing_force": RewardTermCfg(
@@ -155,12 +155,12 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
     ),
     "force_continuity": RewardTermCfg(
       func=mdp.force_continuity,
-      weight=-1.2,
+      weight=-1.5,
       params={"hard_limit": 50.0},
     ),
     "force_second_difference": RewardTermCfg(
       func=mdp.force_second_difference,
-      weight=-0.4,
+      weight=-0.3,
       params={"hard_limit": 50.0},
     ),
     "termination": RewardTermCfg(func=mdp.termination, weight=-200.0),
