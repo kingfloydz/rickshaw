@@ -154,12 +154,12 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
     ),
     "force_continuity": RewardTermCfg(
       func=mdp.force_continuity,
-      weight=-0.5,
+      weight=-1,
       params={"hard_limit": 50.0},
     ),
     "force_second_difference": RewardTermCfg(
       func=mdp.force_second_difference,
-      weight=-0.1,
+      weight=-0.3,
       params={"hard_limit": 50.0},
     ),
     "termination": RewardTermCfg(func=mdp.termination, weight=-200.0),
