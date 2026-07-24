@@ -184,9 +184,19 @@ def force_difference(
   env: ManagerBasedRlEnv,
   action_name: str = "tow_force",
   hard_limit: float = 50.0,
+  forward_weight: float = 0.2,
 ) -> torch.Tensor:
   action = _force_action(env, action_name)
-  difference = action.current_force_b[:, 0] - action.current_force_b[:, 1]
+  forward, lateral, normal = terrain_frame(env, action._entity)
+  difference_w = action.current_force_w[:, 0] - action.current_force_w[:, 1]
+  difference = torch.stack(
+    (
+      forward_weight * torch.sum(difference_w * forward, dim=-1),
+      torch.sum(difference_w * lateral, dim=-1),
+      torch.sum(difference_w * normal, dim=-1),
+    ),
+    dim=-1,
+  )
   return torch.linalg.vector_norm(difference, dim=-1) / (2.0 * hard_limit)
 
 
