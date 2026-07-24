@@ -7,9 +7,10 @@ from typing import TYPE_CHECKING
 import torch
 from mjlab.entity import Entity
 from mjlab.managers.scene_entity_config import SceneEntityCfg
-from mjlab.utils.lab_api.math import quat_apply_inverse
+from mjlab.utils.lab_api.math import quat_apply
 
 from .actions import TowForceAction
+from .frames import terrain_frame
 from .observations import traction_point_height, wheel_contact
 
 if TYPE_CHECKING:
@@ -36,8 +37,10 @@ def track_forward_velocity(
   asset = _asset(env, _DEFAULT_ASSET_CFG)
   command = env.command_manager.get_command(command_name)
   assert command is not None
+  forward, _, _ = terrain_frame(env, asset)
+  velocity = torch.sum(asset.data.root_link_lin_vel_w * forward, dim=-1)
   value = torch.exp(
-    -torch.square(asset.data.root_link_lin_vel_b[:, 0] - command[:, 0]) / sigma**2
+    -torch.square(velocity - command[:, 0]) / sigma**2
   )
   return value
 
@@ -50,8 +53,10 @@ def track_yaw_velocity(
   asset = _asset(env, _DEFAULT_ASSET_CFG)
   command = env.command_manager.get_command(command_name)
   assert command is not None
+  _, _, normal = terrain_frame(env, asset)
+  yaw_velocity = torch.sum(asset.data.root_link_ang_vel_w * normal, dim=-1)
   value = torch.exp(
-    -torch.square(asset.data.root_link_ang_vel_b[:, 2] - command[:, 2]) / sigma**2
+    -torch.square(yaw_velocity - command[:, 2]) / sigma**2
   )
   return value
 
@@ -70,15 +75,23 @@ def traction_height(
 def undesired_linear_velocity(
   env: ManagerBasedRlEnv, asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG
 ) -> torch.Tensor:
-  vel = _asset(env, asset_cfg).data.root_link_lin_vel_b
-  return torch.square(vel[:, 1] / 0.5) + torch.square(vel[:, 2] / 0.3)
+  asset = _asset(env, asset_cfg)
+  _, lateral, normal = terrain_frame(env, asset)
+  velocity_w = asset.data.root_link_lin_vel_w
+  lateral_velocity = torch.sum(velocity_w * lateral, dim=-1)
+  normal_velocity = torch.sum(velocity_w * normal, dim=-1)
+  return torch.square(lateral_velocity / 0.5) + torch.square(normal_velocity / 0.3)
 
 
 def roll_pitch_rate(
   env: ManagerBasedRlEnv, asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG
 ) -> torch.Tensor:
-  rate = _asset(env, asset_cfg).data.root_link_ang_vel_b
-  return torch.square(rate[:, 0]) + torch.square(rate[:, 1])
+  asset = _asset(env, asset_cfg)
+  forward, lateral, _ = terrain_frame(env, asset)
+  rate_w = asset.data.root_link_ang_vel_w
+  return torch.square(torch.sum(rate_w * forward, dim=-1)) + torch.square(
+    torch.sum(rate_w * lateral, dim=-1)
+  )
 
 
 def wheel_slip(
@@ -87,18 +100,14 @@ def wheel_slip(
   wheel_radius: float = 0.3,
 ) -> torch.Tensor:
   asset = _asset(env, asset_cfg)
+  forward, lateral, _ = terrain_frame(env, asset)
   wheel_vel_w = asset.data.body_link_vel_w[:, asset_cfg.body_ids, :3]
-  quat_wheels = asset.data.root_link_quat_w[:, None, :].expand(
-    -1, wheel_vel_w.shape[1], -1
-  )
-  wheel_vel_b = quat_apply_inverse(
-    quat_wheels.reshape(-1, 4), wheel_vel_w.reshape(-1, 3)
-  ).view_as(wheel_vel_w)
+  forward_velocity = torch.sum(wheel_vel_w * forward[:, None, :], dim=-1)
+  lateral_velocity = torch.sum(wheel_vel_w * lateral[:, None, :], dim=-1)
   roll_error = (
-    wheel_vel_b[..., 0] - wheel_radius * asset.data.joint_vel[:, asset_cfg.joint_ids]
+    forward_velocity - wheel_radius * asset.data.joint_vel[:, asset_cfg.joint_ids]
   )
-  lateral_error = wheel_vel_b[..., 1]
-  return torch.sum(torch.square(roll_error) + torch.square(lateral_error), dim=1)
+  return torch.sum(torch.square(roll_error) + torch.square(lateral_velocity), dim=1)
 
 
 def wheel_lift(
@@ -149,8 +158,20 @@ def opposing_force(
   action_name: str = "tow_force",
   hard_limit: float = 50.0,
 ) -> torch.Tensor:
-  """Penalize cancelling lateral and vertical forces at the two hitch points."""
-  force = _force_action(env, action_name).current_force_b[:, :, 1:]
+  """Penalize cancelling ground-lateral and normal hitch forces."""
+  action = _force_action(env, action_name)
+  asset = action._entity
+  _, lateral, normal = terrain_frame(env, asset)
+  force_b = action.current_force_b
+  quat_w = asset.data.root_link_quat_w[:, None, :].expand(-1, 2, -1)
+  force_w = quat_apply(quat_w.reshape(-1, 4), force_b.reshape(-1, 3)).view_as(force_b)
+  force = torch.stack(
+    (
+      torch.sum(force_w * lateral[:, None, :], dim=-1),
+      torch.sum(force_w * normal[:, None, :], dim=-1),
+    ),
+    dim=-1,
+  )
   left, right = force[:, 0], force[:, 1]
   cancelled = torch.where(
     left * right < 0.0,

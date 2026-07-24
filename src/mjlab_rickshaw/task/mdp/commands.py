@@ -9,6 +9,9 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 import torch
 from mjlab.tasks.velocity.mdp import UniformVelocityCommand, UniformVelocityCommandCfg
+from mjlab.utils.lab_api.math import quat_apply
+
+from .frames import terrain_frame
 
 if TYPE_CHECKING:
   import viser
@@ -39,6 +42,26 @@ class RickshawVelocityCommand(UniformVelocityCommand):
       (deque(maxlen=self._HISTORY_LENGTH), deque(maxlen=self._HISTORY_LENGTH))
       for _ in range(5)
     ]
+
+  def _update_metrics(self) -> None:
+    forward, lateral, normal = terrain_frame(self._env, self.robot)
+    velocity_w = self.robot.data.root_link_lin_vel_w
+    actual_linear = torch.stack(
+      (
+        torch.sum(velocity_w * forward, dim=-1),
+        torch.sum(velocity_w * lateral, dim=-1),
+      ),
+      dim=-1,
+    )
+    actual_yaw = torch.sum(self.robot.data.root_link_ang_vel_w * normal, dim=-1)
+    max_command_step = self.cfg.resampling_time_range[1] / self._env.step_dt
+    self.metrics["error_vel_xy"] += (
+      torch.linalg.vector_norm(self.vel_command_b[:, :2] - actual_linear, dim=-1)
+      / max_command_step
+    )
+    self.metrics["error_vel_yaw"] += (
+      torch.abs(self.vel_command_b[:, 2] - actual_yaw) / max_command_step
+    )
 
   def create_gui(
     self,
@@ -99,9 +122,9 @@ class RickshawVelocityCommand(UniformVelocityCommand):
       for title, labels, colors in (
         ("Forward velocity (m/s)", ("Target", "Actual"), ("#d62728", "#1f77b4")),
         ("Yaw velocity (rad/s)", ("Target", "Actual"), ("#d62728", "#1f77b4")),
-        ("Tow force X (N)", ("Left", "Right"), ("#d62728", "#1f77b4")),
-        ("Tow force Y (N)", ("Left", "Right"), ("#d62728", "#1f77b4")),
-        ("Tow force Z (N)", ("Left", "Right"), ("#d62728", "#1f77b4")),
+        ("Tow force forward (N)", ("Left", "Right"), ("#d62728", "#1f77b4")),
+        ("Tow force lateral (N)", ("Left", "Right"), ("#d62728", "#1f77b4")),
+        ("Tow force normal (N)", ("Left", "Right"), ("#d62728", "#1f77b4")),
       ):
         self._plot_handles.append(
           server.gui.add_uplot(
@@ -142,20 +165,30 @@ class RickshawVelocityCommand(UniformVelocityCommand):
       self._plot_env_idx = env_idx
 
     action = self._env.action_manager.get_term("tow_force")
-    force = action.current_force_b[env_idx]
+    forward, lateral, normal = terrain_frame(self._env, self.robot)
+    quat_w = self.robot.data.root_link_quat_w[env_idx].expand(2, -1)
+    force_w = quat_apply(quat_w, action.current_force_b[env_idx])
+    basis_w = torch.stack((forward[env_idx], lateral[env_idx], normal[env_idx]))
+    force = force_w @ basis_w.T
+    forward_velocity = torch.sum(
+      self.robot.data.root_link_lin_vel_w[env_idx] * forward[env_idx]
+    )
+    yaw_velocity = torch.sum(
+      self.robot.data.root_link_ang_vel_w[env_idx] * normal[env_idx]
+    )
     values = (
       torch.stack(
         [
           torch.stack(
             [
               self.vel_command_b[env_idx, 0],
-              self.robot.data.root_link_lin_vel_b[env_idx, 0],
+              forward_velocity,
             ]
           ),
           torch.stack(
             [
               self.vel_command_b[env_idx, 2],
-              self.robot.data.root_link_ang_vel_b[env_idx, 2],
+              yaw_velocity,
             ]
           ),
           force[:, 0],

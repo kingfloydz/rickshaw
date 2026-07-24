@@ -11,6 +11,7 @@ from mjlab.sensor import ContactSensor
 
 from ..terrain import TERRAIN_SLOPES
 from .actions import TowForceAction
+from .frames import ground_normal, terrain_slope
 
 if TYPE_CHECKING:
   from mjlab.envs import ManagerBasedRlEnv
@@ -52,8 +53,7 @@ def traction_point_height(
   slope_values: tuple[float, ...] = TERRAIN_SLOPES,
 ) -> torch.Tensor:
   asset = _asset(env, asset_cfg)
-  slope_xy = ground_slope(env, slope_values=slope_values)
-  normal = _ground_normal(env.device, asset.data.site_pos_w.dtype, slope_xy)
+  normal = ground_normal(env, asset.data.site_pos_w.dtype, slope_values)
   point_w = asset.data.site_pos_w[:, asset_cfg.site_ids]
   origin_w = env.scene.env_origins[:, None, :]
   return torch.sum((point_w - origin_w) * normal[:, None, :], dim=-1)
@@ -84,13 +84,9 @@ def wheel_angular_velocity(
 
 def ground_slope(
   env: ManagerBasedRlEnv,
-  slope_values: tuple[float, ...] = (0.0,),
-  terrain_entity_name: str = "terrain",
+  slope_values: tuple[float, ...] = TERRAIN_SLOPES,
 ) -> torch.Tensor:
-  terrain = env.scene[terrain_entity_name]
-  slopes = torch.as_tensor(slope_values, device=env.device)
-  slope_x = slopes[terrain.terrain_types]
-  return torch.stack((slope_x, torch.zeros_like(slope_x)), dim=-1)
+  return terrain_slope(env, slope_values)
 
 
 def wheel_contact(
@@ -105,14 +101,3 @@ def wheel_contact(
   return (
     (torch.linalg.vector_norm(history, dim=-1) > force_threshold).any(dim=-1).float()
   )
-
-
-def _ground_normal(
-  device: str, dtype: torch.dtype, slope_xy: torch.Tensor
-) -> torch.Tensor:
-  slope = slope_xy.to(device=device, dtype=dtype)
-  normal = torch.cat(
-    (-torch.tan(slope), torch.ones(slope.shape[0], 1, device=device, dtype=dtype)),
-    dim=-1,
-  )
-  return normal / torch.linalg.vector_norm(normal, dim=-1, keepdim=True)
