@@ -111,11 +111,14 @@ class TowForceVisualization(ManagerTermBase):
   def __init__(self, cfg, env: ManagerBasedRlEnv):
     super().__init__(env)
     self._action = env.action_manager.get_term("tow_force")
+    self._debug_vis_enabled = True
 
   def __call__(self, env: ManagerBasedRlEnv) -> torch.Tensor:
     return torch.zeros(env.num_envs, device=env.device)
 
   def debug_vis(self, visualizer) -> None:
+    if not self._debug_vis_enabled:
+      return
     force_b = self._action.current_force_b
     quat_sites = self._action._entity.data.root_link_quat_w[:, None, :].expand(-1, 2, -1)
     force_w = quat_apply(quat_sites.reshape(-1, 4), force_b.reshape(-1, 3)).view_as(force_b)
