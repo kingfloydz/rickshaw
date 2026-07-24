@@ -72,10 +72,6 @@ class TowForceAction(ActionTerm):
     return self._entity.data.site_pos_w[:, self._site_ids]
 
   @property
-  def hitch_lin_vel_w(self) -> torch.Tensor:
-    return self._entity.data.site_lin_vel_w[:, self._site_ids]
-
-  @property
   def previous_force_b(self) -> torch.Tensor:
     return self._previous_force_b
 

@@ -200,18 +200,5 @@ def force_difference(
   return torch.linalg.vector_norm(difference, dim=-1) / (2.0 * hard_limit)
 
 
-def traction_power(
-  env: ManagerBasedRlEnv,
-  action_name: str = "tow_force",
-  force_limit: float = 50.0,
-  velocity_scale: float = 2.0,
-) -> torch.Tensor:
-  action = _force_action(env, action_name)
-  power = torch.abs(
-    torch.sum(action.current_force_w * action.hitch_lin_vel_w, dim=-1)
-  )
-  return torch.sum(power, dim=1) / (2.0 * force_limit * velocity_scale)
-
-
 def termination(env: ManagerBasedRlEnv) -> torch.Tensor:
   return env.termination_manager.terminated.float()
