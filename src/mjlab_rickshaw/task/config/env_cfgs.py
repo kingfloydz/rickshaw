@@ -160,13 +160,8 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
     ),
     "force_difference": RewardTermCfg(
       func=mdp.force_difference,
-<<<<<<< Updated upstream
-      weight=-1.0,
+      weight=-2.0,
       params={"hard_limit": 50.0, "forward_weight": 0.2},
-=======
-      weight=-0.8,
-      params={"hard_limit": 50.0},
->>>>>>> Stashed changes
     ),
     "force_continuity": RewardTermCfg(
       func=mdp.force_continuity,
