@@ -110,12 +110,12 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
   rewards = {
     "track_forward_velocity": RewardTermCfg(
       func=mdp.track_forward_velocity,
-      weight=3.0,
+      weight=2.0,
       params={"command_name": "twist", "sigma": 0.4},
     ),
     "track_yaw_velocity": RewardTermCfg(
       func=mdp.track_yaw_velocity,
-      weight=1.5,
+      weight=1.0,
       params={"command_name": "twist", "sigma": 0.3},
     ),
     "traction_point_height": RewardTermCfg(

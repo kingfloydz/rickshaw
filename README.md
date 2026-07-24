@@ -46,7 +46,7 @@ uv run play Mjlab-Rickshaw-Force-Flat --agent random
 
 
 uv run play Mjlab-Rickshaw-Force-Flat \
-  --checkpoint-file /inspire/hdd/project/leverage-robot/ky26212/rickshaw/logs/rsl_rl/rickshaw_force_velocity/2026-07-24_05-39-56/model_800.pt \
+  --checkpoint-file /inspire/hdd/project/leverage-robot/ky26212/rickshaw/logs/rsl_rl/rickshaw_force_velocity/2026-07-24_06-00-44/model_800.pt \
   --num-envs 19 \
   --device cuda:0 \
   --viewer viser
@@ -73,15 +73,6 @@ uv run tensorboard \
 
 git pull --ff-only
 
-
-
-
-cd /inspire/hdd/project/leverage-robot/ky26212/rickshaw
-
-uv run tensorboard \
-  --logdir logs/rsl_rl/rickshaw_force_velocity \
-  --host 0.0.0.0 \
-  --port 6006
 
 
 export PATH="$HOME/.local/bin:$PATH"
