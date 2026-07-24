@@ -44,7 +44,7 @@ uv run play Mjlab-Rickshaw-Force-Flat --agent random
 
 
 uv run play Mjlab-Rickshaw-Force-Flat \
-  --checkpoint-file /inspire/hdd/project/leverage-robot/ky26212/rickshaw/logs/rsl_rl/rickshaw_force_velocity/2026-07-24_08-34-04/model_399.pt \
+  --checkpoint-file /inspire/hdd/project/leverage-robot/ky26212/rickshaw/logs/rsl_rl/rickshaw_force_velocity/2026-07-24_09-14-05/model_399.pt \
   --num-envs 19 \
   --device cuda:0 \
   --viewer viser
