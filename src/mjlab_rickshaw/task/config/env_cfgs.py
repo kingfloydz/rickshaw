@@ -196,6 +196,7 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
     rewards=rewards,
     terminations={
       "time_out": TerminationTermCfg(func=envs_mdp.time_out, time_out=True),
+      "nan_detection": TerminationTermCfg(func=envs_mdp.nan_detection),
       "bad_orientation": TerminationTermCfg(
         func=mdp.bad_orientation,
         params={"limit_angle": math.radians(45.0)},
