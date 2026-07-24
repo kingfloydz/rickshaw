@@ -61,8 +61,9 @@ def traction_height(
   asset_cfg: SceneEntityCfg,
   target_height: float = 0.75,
   sigma: float = 0.05,
+  slope_values: tuple[float, ...] = (0.0,),
 ) -> torch.Tensor:
-  height = traction_point_height(env, asset_cfg)
+  height = traction_point_height(env, asset_cfg, slope_values=slope_values)
   return torch.exp(-torch.sum(torch.square(height - target_height), dim=1) / sigma**2)
 
 

@@ -9,13 +9,13 @@ from mjlab.entity import Entity
 from mjlab.managers.scene_entity_config import SceneEntityCfg
 from mjlab.sensor import ContactSensor
 
+from ..terrain import TERRAIN_SLOPES
 from .actions import TowForceAction
 
 if TYPE_CHECKING:
   from mjlab.envs import ManagerBasedRlEnv
 
 _DEFAULT_ASSET_CFG = SceneEntityCfg("robot")
-GROUND_SLOPE_XY = (0.0, 0.0)
 
 
 def _asset(env: ManagerBasedRlEnv, asset_cfg: SceneEntityCfg) -> Entity:
@@ -49,9 +49,10 @@ def projected_gravity(
 def traction_point_height(
   env: ManagerBasedRlEnv,
   asset_cfg: SceneEntityCfg = _DEFAULT_ASSET_CFG,
-  slope_xy: tuple[float, float] = GROUND_SLOPE_XY,
+  slope_values: tuple[float, ...] = TERRAIN_SLOPES,
 ) -> torch.Tensor:
   asset = _asset(env, asset_cfg)
+  slope_xy = ground_slope(env, slope_values=slope_values)
   normal = _ground_normal(env.device, asset.data.site_pos_w.dtype, slope_xy)
   point_w = asset.data.site_pos_w[:, asset_cfg.site_ids]
   origin_w = env.scene.env_origins[:, None, :]
@@ -83,9 +84,13 @@ def wheel_angular_velocity(
 
 def ground_slope(
   env: ManagerBasedRlEnv,
-  slope_xy: tuple[float, float] = GROUND_SLOPE_XY,
+  slope_values: tuple[float, ...] = (0.0,),
+  terrain_entity_name: str = "terrain",
 ) -> torch.Tensor:
-  return torch.as_tensor(slope_xy, device=env.device).expand(env.num_envs, 2)
+  terrain = env.scene[terrain_entity_name]
+  slopes = torch.as_tensor(slope_values, device=env.device)
+  slope_x = slopes[terrain.terrain_types]
+  return torch.stack((slope_x, torch.zeros_like(slope_x)), dim=-1)
 
 
 def wheel_contact(
@@ -103,8 +108,11 @@ def wheel_contact(
 
 
 def _ground_normal(
-  device: str, dtype: torch.dtype, slope_xy: tuple[float, float]
+  device: str, dtype: torch.dtype, slope_xy: torch.Tensor
 ) -> torch.Tensor:
-  slope = torch.as_tensor(slope_xy, device=device, dtype=dtype)
-  normal = torch.cat((-torch.tan(slope), torch.ones(1, device=device, dtype=dtype)))
-  return normal / torch.linalg.vector_norm(normal)
+  slope = slope_xy.to(device=device, dtype=dtype)
+  normal = torch.cat(
+    (-torch.tan(slope), torch.ones(slope.shape[0], 1, device=device, dtype=dtype)),
+    dim=-1,
+  )
+  return normal / torch.linalg.vector_norm(normal, dim=-1, keepdim=True)

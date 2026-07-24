@@ -22,6 +22,7 @@ from mjlab.viewer import ViewerConfig
 
 from mjlab_rickshaw.asset_zoo.rickshaw import get_rickshaw_cfg
 from mjlab_rickshaw.task import mdp
+from mjlab_rickshaw.task.terrain import TERRAIN_SLOPES, make_sloped_terrain_cfg
 
 
 def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
@@ -58,7 +59,7 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
     "projected_gravity": ObservationTermCfg(func=mdp.projected_gravity),
     "traction_point_height": ObservationTermCfg(
       func=mdp.traction_point_height,
-      params={"asset_cfg": hitch_cfg},
+      params={"asset_cfg": hitch_cfg, "slope_values": TERRAIN_SLOPES},
     ),
     "previous_force": ObservationTermCfg(func=mdp.previous_tow_force),
     "previous_previous_force": ObservationTermCfg(func=mdp.previous_previous_tow_force),
@@ -69,7 +70,10 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
       func=mdp.wheel_angular_velocity,
       params={"asset_cfg": wheel_cfg},
     ),
-    "ground_slope": ObservationTermCfg(func=mdp.ground_slope),
+    "ground_slope": ObservationTermCfg(
+      func=mdp.ground_slope,
+      params={"slope_values": TERRAIN_SLOPES},
+    ),
     "wheel_contact": ObservationTermCfg(
       func=mdp.wheel_contact,
       params={"sensor_name": wheel_contact.name},
@@ -118,7 +122,12 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
     "traction_point_height": RewardTermCfg(
       func=mdp.traction_height,
       weight=0.8,
-      params={"asset_cfg": hitch_cfg, "target_height": 0.75, "sigma": 0.05},
+      params={
+        "asset_cfg": hitch_cfg,
+        "target_height": 0.75,
+        "sigma": 0.05,
+        "slope_values": TERRAIN_SLOPES,
+      },
     ),
     "undesired_linear_velocity": RewardTermCfg(
       func=mdp.undesired_linear_velocity,
@@ -151,11 +160,18 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
       params={"hard_limit": 50.0},
     ),
     "termination": RewardTermCfg(func=mdp.termination, weight=-200.0),
+    "tow_force_visualization": RewardTermCfg(
+      func=mdp.TowForceVisualization,
+      weight=0.0,
+    ),
   }
 
   return ManagerBasedRlEnvCfg(
     scene=SceneCfg(
-      terrain=TerrainEntityCfg(terrain_type="plane"),
+      terrain=TerrainEntityCfg(
+        terrain_type="generator",
+        terrain_generator=make_sloped_terrain_cfg(),
+      ),
       entities={"robot": get_rickshaw_cfg()},
       sensors=(wheel_contact,),
       num_envs=4096,

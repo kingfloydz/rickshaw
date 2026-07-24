@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import torch
 from mjlab.managers.action_manager import ActionTerm, ActionTermCfg
+from mjlab.managers.manager_base import ManagerTermBase
 from mjlab.utils.lab_api.math import quat_apply
 
 if TYPE_CHECKING:
@@ -102,3 +103,26 @@ class TowForceAction(ActionTerm):
     self._current_force_b[env_ids] = 0.0
     self._previous_force_b[env_ids] = 0.0
     self._previous_previous_force_b[env_ids] = 0.0
+
+
+class TowForceVisualization(ManagerTermBase):
+  """Draw the two applied towing forces as 3D arrows in the viewer."""
+
+  def __init__(self, cfg, env: ManagerBasedRlEnv):
+    super().__init__(env)
+    self._action = env.action_manager.get_term("tow_force")
+
+  def __call__(self, env: ManagerBasedRlEnv) -> torch.Tensor:
+    return torch.zeros(env.num_envs, device=env.device)
+
+  def debug_vis(self, visualizer) -> None:
+    force_b = self._action.current_force_b
+    quat_sites = self._action._entity.data.root_link_quat_w[:, None, :].expand(-1, 2, -1)
+    force_w = quat_apply(quat_sites.reshape(-1, 4), force_b.reshape(-1, 3)).view_as(force_b)
+    hitch_pos_w = self._action._entity.data.site_pos_w[:, self._action._site_ids]
+
+    for env_idx in visualizer.get_env_indices(self.num_envs):
+      for hitch_idx, color in enumerate(((0.95, 0.15, 0.1, 1.0), (0.1, 0.35, 0.95, 1.0))):
+        start = hitch_pos_w[env_idx, hitch_idx]
+        end = start + 0.02 * force_w[env_idx, hitch_idx]
+        visualizer.add_arrow(start, end, color=color, width=0.025)
