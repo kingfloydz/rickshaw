@@ -165,7 +165,7 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
     ),
     "traction_power": RewardTermCfg(
       func=mdp.traction_power,
-      weight=-1,
+      weight=-10,
       params={"force_limit": 50.0, "velocity_scale": 2.0},
     ),
     "force_continuity": RewardTermCfg(
