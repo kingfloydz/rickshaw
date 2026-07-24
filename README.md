@@ -48,8 +48,8 @@ uv run play Mjlab-Rickshaw-Force-Flat --agent random
 uv sync --locked
 
 uv run play Mjlab-Rickshaw-Force-Flat \
-  --checkpoint-file "$LATEST" \
-  --num-envs 1 \
+  --checkpoint-file /inspire/hdd/project/leverage-robot/ky26212/rickshaw/logs/rsl_rl/rickshaw_force_velocity/2026-07-24_04-17-55/model_1000.pt \
+  --num-envs 19 \
   --device cuda:0 \
   --viewer viser
 
