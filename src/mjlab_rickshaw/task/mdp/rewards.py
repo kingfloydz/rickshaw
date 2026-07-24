@@ -117,7 +117,7 @@ def peak_force(
 ) -> torch.Tensor:
   action = _force_action(env, action_name)
   force_peak = torch.linalg.vector_norm(action.current_force_b, dim=-1).amax(dim=1)
-  return torch.square(torch.relu(force_peak - soft_limit) / (hard_limit - soft_limit))
+  return torch.pow(torch.relu(force_peak - soft_limit) / (hard_limit - soft_limit),3)
 
 
 def force_continuity(

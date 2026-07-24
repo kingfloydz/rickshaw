@@ -24,7 +24,7 @@ class ForcePenaltyCurriculum:
     env_ids: torch.Tensor | slice | None,
     forward_reward_name: str = "track_forward_velocity",
     yaw_reward_name: str = "track_yaw_velocity",
-    ramp_fraction: float = 0.2,
+    ramp_fraction: float = 0.1,
   ) -> dict[str, float]:
     ids = slice(None) if env_ids is None else env_ids
     if env.common_step_counter > 0:
@@ -43,7 +43,7 @@ class ForcePenaltyCurriculum:
         self.rho = min(self.rho, 1.0)
 
     for name, base_weight in (
-      ("peak_force", -0.2),
+      ("peak_force", -1),
       ("force_continuity", -0.08),
       ("force_second_difference", -0.01),
     ):

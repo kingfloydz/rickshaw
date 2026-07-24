@@ -62,3 +62,22 @@ git add .
 git commit -m "code"
 
 git push origin main
+
+
+
+
+
+git pull --ff-only
+
+
+
+
+cd /inspire/hdd/project/leverage-robot/ky26212/rickshaw
+
+uv run tensorboard \
+  --logdir logs/rsl_rl/rickshaw_force_velocity \
+  --host 0.0.0.0 \
+  --port 6006
+
+
+export PATH="$HOME/.local/bin:$PATH"
