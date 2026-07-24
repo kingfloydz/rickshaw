@@ -1,6 +1,6 @@
 """MDP terms for the rickshaw task."""
 
-from .actions import TowForceAction, TowForceActionCfg, TowForceVisualization
+from .actions import TowForceAction, TowForceActionCfg
 from .commands import RickshawVelocityCommand, RickshawVelocityCommandCfg
 from .observations import (
   body_angular_velocity,
@@ -33,7 +33,6 @@ from .terminations import bad_orientation, wheel_air
 __all__ = [
   "TowForceAction",
   "TowForceActionCfg",
-  "TowForceVisualization",
   "RickshawVelocityCommand",
   "RickshawVelocityCommandCfg",
   "body_angular_velocity",

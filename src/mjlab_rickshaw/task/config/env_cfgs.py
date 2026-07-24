@@ -94,6 +94,7 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
   commands: dict[str, CommandTermCfg] = {
     "twist": mdp.RickshawVelocityCommandCfg(
       entity_name="robot",
+      debug_vis=True,
       resampling_time_range=(3.0, 6.0),
       rel_standing_envs=0.1,
       rel_forward_envs=0.15,
@@ -163,10 +164,6 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
       params={"hard_limit": 50.0},
     ),
     "termination": RewardTermCfg(func=mdp.termination, weight=-200.0),
-    "tow_force_visualization": RewardTermCfg(
-      func=mdp.TowForceVisualization,
-      weight=0.0,
-    ),
   }
 
   return ManagerBasedRlEnvCfg(

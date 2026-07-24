@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
 import torch
 from mjlab.tasks.velocity.mdp import UniformVelocityCommand, UniformVelocityCommandCfg
-from mjlab.utils.lab_api.math import quat_apply
 
+from .actions import TowForceAction
 from .frames import terrain_frame
 
 if TYPE_CHECKING:
@@ -154,6 +154,18 @@ class RickshawVelocityCommand(UniformVelocityCommand):
         self.vel_command_b[env_idx, axis] = slider.value
     self._update_plots()
 
+  def _debug_vis_impl(self, visualizer) -> None:
+    action = cast(TowForceAction, self._env.action_manager.get_term("tow_force"))
+    force_w = action.current_force_w
+    hitch_pos_w = action.hitch_pos_w
+
+    colors = ((0.95, 0.15, 0.1, 1.0), (0.1, 0.35, 0.95, 1.0))
+    for env_idx in visualizer.get_env_indices(self.num_envs):
+      for hitch_idx, color in enumerate(colors):
+        start = hitch_pos_w[env_idx, hitch_idx]
+        end = start + 0.02 * force_w[env_idx, hitch_idx]
+        visualizer.add_arrow(start, end, color=color, width=0.025)
+
   def _update_plots(self) -> None:
     if not self._plot_handles:
       return
@@ -164,12 +176,10 @@ class RickshawVelocityCommand(UniformVelocityCommand):
           history.clear()
       self._plot_env_idx = env_idx
 
-    action = self._env.action_manager.get_term("tow_force")
+    action = cast(TowForceAction, self._env.action_manager.get_term("tow_force"))
     forward, lateral, normal = terrain_frame(self._env, self.robot)
-    quat_w = self.robot.data.root_link_quat_w[env_idx].expand(2, -1)
-    force_w = quat_apply(quat_w, action.current_force_b[env_idx])
     basis_w = torch.stack((forward[env_idx], lateral[env_idx], normal[env_idx]))
-    force = force_w @ basis_w.T
+    force = action.current_force_w[env_idx] @ basis_w.T
     forward_velocity = torch.sum(
       self.robot.data.root_link_lin_vel_w[env_idx] * forward[env_idx]
     )
