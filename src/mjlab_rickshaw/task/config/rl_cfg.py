@@ -35,6 +35,7 @@ def rickshaw_ppo_runner_cfg() -> RslRlOnPolicyRunnerCfg:
       max_grad_norm=1.0,
     ),
     experiment_name="rickshaw_force_velocity",
+    logger="tensorboard",
     save_interval=200,
     num_steps_per_env=24,
     max_iterations=10_000,

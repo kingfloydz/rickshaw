@@ -56,7 +56,7 @@ def traction_point_height(
   normal = _ground_normal(env.device, asset.data.site_pos_w.dtype, slope_xy)
   point_w = asset.data.site_pos_w[:, asset_cfg.site_ids]
   origin_w = env.scene.env_origins[:, None, :]
-  return torch.sum((point_w - origin_w) * normal, dim=-1)
+  return torch.sum((point_w - origin_w) * normal[:, None, :], dim=-1)
 
 
 def previous_tow_force(

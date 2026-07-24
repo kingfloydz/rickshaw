@@ -16,7 +16,6 @@ from mjlab.managers.termination_manager import TerminationTermCfg
 from mjlab.scene import SceneCfg
 from mjlab.sensor import ContactMatch, ContactSensorCfg
 from mjlab.sim import MujocoCfg, SimulationCfg
-from mjlab.tasks.velocity.mdp import UniformVelocityCommandCfg
 from mjlab.terrains import TerrainEntityCfg
 from mjlab.viewer import ViewerConfig
 
@@ -94,13 +93,13 @@ def make_rickshaw_env_cfg() -> ManagerBasedRlEnvCfg:
   }
 
   commands: dict[str, CommandTermCfg] = {
-    "twist": UniformVelocityCommandCfg(
+    "twist": mdp.RickshawVelocityCommandCfg(
       entity_name="robot",
       resampling_time_range=(3.0, 6.0),
       rel_standing_envs=0.1,
       rel_forward_envs=0.15,
       heading_command=False,
-      ranges=UniformVelocityCommandCfg.Ranges(
+      ranges=mdp.RickshawVelocityCommandCfg.Ranges(
         lin_vel_x=(0.0, 2.0),
         lin_vel_y=(0.0, 0.0),
         ang_vel_z=(-0.8, 0.8),
